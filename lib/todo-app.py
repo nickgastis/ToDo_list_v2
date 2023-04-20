@@ -33,7 +33,6 @@ def get_user_by_id(id):
         current_user = user
         return current_user
     else:
-        print('User not found')
         return None
 
 
@@ -52,23 +51,6 @@ def get_todo_lists_for_user(user_id):
     print(f"Here are {current_user.username}'s ToDo-Lists")
     return session.query(TodoList).filter_by(user_id=user_id).all()
 
-def get_tasks_for_user(user_id):
-    if not current_user:
-        print('No current user set')
-        return
-    todo_lists = get_todo_lists_for_user(user_id)
-    if not todo_lists:
-        print('No todo lists found')
-        return
-    for todo_list in todo_lists:
-        print(f'Todo list: {todo_list.name}')
-        tasks = session.query(Task).filter_by(todo_list_id=todo_list.id).all()
-        if tasks:
-            for task in tasks:
-                print(f'{task.id} | {task.description}')
-        else:
-            print('No tasks found')
-        print()
 
 
 def delete_todo_list(todo_list_id):
@@ -91,6 +73,26 @@ def create_task(description, todo_list_id):
     else:
         print('Todo list not found')
 
+def get_tasks_for_user(user_id):
+    if not current_user:
+        print('No current user set')
+        return
+    todo_lists = get_todo_lists_for_user(user_id)
+    if not todo_lists:
+        print('No todo lists found')
+        return
+    for todo_list in todo_lists:
+        print(f'Todo list: {todo_list.name}')
+        tasks = session.query(Task).filter_by(todo_list_id=todo_list.id).all()
+        if tasks:
+            for task in tasks:
+                print(f'{task.id} | {task.description}')
+        else:
+            print('No tasks found')
+        print()
+
+
+
 
 def run_todo_list_app():
     os.system('clear') 
@@ -105,8 +107,6 @@ def run_todo_list_app():
             print('4. Get all todo lists for the current user')
             print('5. Delete todo list')
             print('6. Create task')
-            print('7. Get tasks')
-
             print('0. Exit')
         else:
             print('1. Login')
@@ -117,6 +117,7 @@ def run_todo_list_app():
         if choice == '1':
             if not current_user:
                 username = input('Enter username: ')
+                print("")
                 login(username)
             else:
                 id = input('Enter user ID: ')
@@ -143,13 +144,18 @@ def run_todo_list_app():
                 todo_lists = get_todo_lists_for_user(current_user.id)
                 for todo_list in todo_lists:
                     print(f'{todo_list.id} | {todo_list.name}')
-            
+            input('Press Enter to continue...')
         elif choice == '5':
             if not current_user:
                 print('No current user set')
             else:
-                todo_list_id = input('Enter todo list ID: ')
+                todo_lists = get_todo_lists_for_user(current_user.id)
+                print('Todo lists:')
+                for todo_list in todo_lists:
+                    print(f'{todo_list.id} | {todo_list.name}')
+                todo_list_id = input('Enter todo list ID to delete: ')
                 delete_todo_list(todo_list_id)
+            input('Press Enter to continue...')
         elif choice == '6':
             if not current_user:
                 print('No current user set')
@@ -158,12 +164,7 @@ def run_todo_list_app():
                 if not todo_lists:
                     print('No Todo lists found')
                     run_todo_list_app()
-                elif choice == '7':
-                    if not current_user:
-                        print('No current user set')
-                    else:
-                        get_tasks_for_user(current_user.id)
-                    input('Press Enter to continue...')
+
                 else:
                     for todo_list in todo_lists:
                         print(f'{todo_list.id} | {todo_list.name}')
