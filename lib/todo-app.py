@@ -3,6 +3,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models import Base, User, TodoList, Task
 
+def clear_screen():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
 white = "\033[1;37"
 red = "\033[1;31;"
 yellow = "\033[4;33;49m"
@@ -65,7 +68,7 @@ def delete_todo_list(todo_list_id):
         session.query(Task).filter_by(todo_list_id=todo_list_id).delete()
         session.delete(todo_list)
         session.commit()
-        print(f'Todo list {todo_list.name} deleted')
+        print(f"Todo list '{todo_list.name}' deleted")
     else:
         print('Todo list not found')
 
@@ -78,6 +81,7 @@ def create_task(description, todo_list_id):
         session.commit()
         print(f'Task "{task.description}" added to todo list "{todo_list.name}"')
     else:
+        
         print('Todo list not found')
 
 def get_tasks_for_user(user_id):
@@ -141,6 +145,7 @@ def run_todo_list_app():
                 else:
                     print('User not found')
         elif choice == '0':
+            clear_screen()
             break
                 
         elif choice == '2':
@@ -155,8 +160,13 @@ def run_todo_list_app():
             name = input('Enter todo list name: ')
             print("")
             user_id = current_user.id if current_user else input('Enter user ID: ')
-            create_todo_list(name, user_id)
-            print('Todo list created\n')
+            if len(name) > 0:
+                create_todo_list(name, user_id)
+                print('Todo list created\n')
+            else:
+                print("Name must be more than 1 character.\n")
+                
+
             
         elif choice == '4':
             if not current_user:
@@ -179,7 +189,7 @@ def run_todo_list_app():
                 todo_list_id = input('Enter todo list ID to delete: ')
                 print("")
                 delete_todo_list(todo_list_id)
-            input('\nPress Enter to continue...')
+            
             print("")
         elif choice == '6':
             if not current_user:
@@ -200,10 +210,12 @@ def run_todo_list_app():
                     print('Todo list not found')
                 else:
                     description = input('\nEnter task description: ')
+                    
                     task = Task(description=description, todo_list_id=todo_list.id)
                     session.add(task)
                     session.commit()
                     print(f'\nTask "{description}" created and added to Todo list "{todo_list.name}"\n')
+                
         elif choice =='7':
             if not current_user:
                 print('No current user set')
@@ -215,13 +227,19 @@ def run_todo_list_app():
                 else:
                     for todo_list in todo_lists:
                         print(f'{todo_list.id} | {todo_list.name}')
-                    todo_list_id = input('Enter the ID of the Todo list to get tasks for: ')
+                    todo_list_id = input('\nEnter the ID of the Todo list to get tasks for: ')
+                    selected_todo_list = session.query(TodoList).filter_by(id=todo_list_id).first()
+                    print("")
                     tasks = session.query(Task).filter_by(todo_list_id=todo_list_id).all()
                     if not tasks:
                         print('No tasks found for the selected Todo list')
                     else:
+                        
+                        print(f"Here are the tasks in '{selected_todo_list.name}'\n")
                         for task in tasks:
                             print(f'{task.id} | {task.description}')
+                    input('\nPress Enter to continue...')
+                    print("")
 
                 
 
